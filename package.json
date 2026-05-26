@@ -1,0 +1,18 @@
+{
+  "name": "urban-traffic-management",
+  "version": "1.0.0",
+  "description": "Plateforme intelligente de gestion du trafic urbain - Architecture microservices avec API Gateway GraphQL",
+  "scripts": {
+    "install:all": "npm i --prefix auth-service && npm i --prefix vehicle-service && npm i --prefix traffic-service && npm i --prefix incident-service && npm i --prefix notification-service && npm i --prefix api-gateway",
+    "start:auth": "npm run start:dev --prefix auth-service",
+    "start:vehicle": "npm run start:dev --prefix vehicle-service",
+    "start:traffic": "npm run start:dev --prefix traffic-service",
+    "start:incident": "npm run start:dev --prefix incident-service",
+    "start:notification": "npm run start:dev --prefix notification-service",
+    "start:gateway": "npm run start:dev --prefix api-gateway",
+    "docker:up": "docker-compose up --build -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:reset": "docker-compose down -v && docker-compose up --build -d"
+  }
+}

@@ -1,0 +1,257 @@
+services:
+  # ─── Bases de données ────────────────────────────────────────────────────────
+  auth-db:
+    image: postgres:15-alpine
+    container_name: auth-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    networks:
+      - traffic-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vehicle-db:
+    image: postgres:15-alpine
+    container_name: vehicle-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: vehicle_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - vehicle-db-data:/var/lib/postgresql/data
+    networks:
+      - traffic-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  traffic-db:
+    image: postgres:15-alpine
+    container_name: traffic-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: traffic_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - traffic-db-data:/var/lib/postgresql/data
+    networks:
+      - traffic-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  incident-db:
+    image: postgres:15-alpine
+    container_name: incident-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: incident_db
+    ports:
+      - "5436:5432"
+    volumes:
+      - incident-db-data:/var/lib/postgresql/data
+    networks:
+      - traffic-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  notification-db:
+    image: postgres:15-alpine
+    container_name: notification-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: notification_db
+    ports:
+      - "5437:5432"
+    volumes:
+      - notification-db-data:/var/lib/postgresql/data
+    networks:
+      - traffic-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Microservices ───────────────────────────────────────────────────────────
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      DB_HOST: auth-db
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: auth_db
+      JWT_SECRET: traffic_jwt_secret_2024
+      JWT_EXPIRES_IN: 24h
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    networks:
+      - traffic-network
+    restart: unless-stopped
+
+  vehicle-service:
+    build:
+      context: ./vehicle-service
+      dockerfile: Dockerfile
+    container_name: vehicle-service
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      DB_HOST: vehicle-db
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: vehicle_db
+      JWT_SECRET: traffic_jwt_secret_2024
+    depends_on:
+      vehicle-db:
+        condition: service_healthy
+    networks:
+      - traffic-network
+    restart: unless-stopped
+
+  traffic-service:
+    build:
+      context: ./traffic-service
+      dockerfile: Dockerfile
+    container_name: traffic-service
+    ports:
+      - "3003:3003"
+    environment:
+      PORT: 3003
+      DB_HOST: traffic-db
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: traffic_db
+      JWT_SECRET: traffic_jwt_secret_2024
+    depends_on:
+      traffic-db:
+        condition: service_healthy
+    networks:
+      - traffic-network
+    restart: unless-stopped
+
+  incident-service:
+    build:
+      context: ./incident-service
+      dockerfile: Dockerfile
+    container_name: incident-service
+    ports:
+      - "3004:3004"
+    environment:
+      PORT: 3004
+      DB_HOST: incident-db
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: incident_db
+      JWT_SECRET: traffic_jwt_secret_2024
+    depends_on:
+      incident-db:
+        condition: service_healthy
+    networks:
+      - traffic-network
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    ports:
+      - "3005:3005"
+    environment:
+      PORT: 3005
+      DB_HOST: notification-db
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: notification_db
+      JWT_SECRET: traffic_jwt_secret_2024
+    depends_on:
+      notification-db:
+        condition: service_healthy
+    networks:
+      - traffic-network
+    restart: unless-stopped
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      JWT_SECRET: traffic_jwt_secret_2024
+      AUTH_SERVICE_URL: http://auth-service:3001/graphql
+      VEHICLE_SERVICE_URL: http://vehicle-service:3002/graphql
+      TRAFFIC_SERVICE_URL: http://traffic-service:3003/graphql
+      INCIDENT_SERVICE_URL: http://incident-service:3004/graphql
+      NOTIFICATION_SERVICE_URL: http://notification-service:3005/graphql
+    depends_on:
+      - auth-service
+      - vehicle-service
+      - traffic-service
+      - incident-service
+      - notification-service
+    networks:
+      - traffic-network
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: dashboard
+    ports:
+      - "3010:3010"
+    depends_on:
+      - api-gateway
+    networks:
+      - traffic-network
+    restart: unless-stopped
+
+networks:
+  traffic-network:
+    driver: bridge
+
+volumes:
+  auth-db-data:
+  vehicle-db-data:
+  traffic-db-data:
+  incident-db-data:
+  notification-db-data:
