@@ -1,0 +1,76 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-auth:
+    name: Test Auth Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: auth-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: auth-service/package-lock.json
+      - run: npm install
+      - run: npm run build
+      - run: npx jest --passWithNoTests
+
+  test-vehicle:
+    name: Test Vehicle Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vehicle-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: vehicle-service/package-lock.json
+      - run: npm install
+      - run: npm run build
+      - run: npx jest --passWithNoTests
+
+  test-incident:
+    name: Test Incident Service
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: incident-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: incident-service/package-lock.json
+      - run: npm install
+      - run: npm run build
+      - run: npx jest --passWithNoTests
+
+  build-docker:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [test-auth, test-vehicle, test-incident]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build all Docker images
+        run: docker-compose build
+      - name: Verify services start
+        run: |
+          docker-compose up -d auth-db vehicle-db incident-db traffic-db notification-db
+          sleep 15
+          docker-compose up -d auth-service vehicle-service traffic-service incident-service notification-service
+          sleep 20
+          docker-compose ps
+          docker-compose down
