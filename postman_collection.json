@@ -1,0 +1,966 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Trafic Urbain - API GraphQL",
+    "description": "Collection complète des requêtes GraphQL pour le projet de gestion du trafic urbain - NestJS Microservices",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3001",
+      "type": "string",
+      "description": "URL de base de l'API Gateway / Auth Service"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT Token - à remplir après connexion"
+    },
+    {
+      "key": "vehicle_id",
+      "value": "",
+      "type": "string",
+      "description": "ID d'un véhicule - à remplir après création"
+    },
+    {
+      "key": "zone_id",
+      "value": "",
+      "type": "string",
+      "description": "ID d'une zone de trafic - à remplir après création"
+    },
+    {
+      "key": "incident_id",
+      "value": "",
+      "type": "string",
+      "description": "ID d'un incident - à remplir après déclaration"
+    },
+    {
+      "key": "notification_id",
+      "value": "",
+      "type": "string",
+      "description": "ID d'une notification - à remplir après envoi"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string",
+      "description": "ID d'un utilisateur - à remplir après inscription"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Authentification et gestion des utilisateurs - Port 3001",
+      "item": [
+        {
+          "name": "Inscription (Register)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  register(input: {\n    email: \"admin@traffic.com\",\n    password: \"password123\",\n    firstName: \"Admin\",\n    lastName: \"User\",\n    role: ADMIN\n  }) {\n    accessToken\n    user {\n      id\n      email\n      role\n      firstName\n      lastName\n      createdAt\n    }\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3001/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["graphql"]
+            },
+            "description": "Créer un nouveau compte utilisateur avec le rôle ADMIN ou OPERATOR"
+          },
+          "response": []
+        },
+        {
+          "name": "Connexion (Login)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.login) {",
+                  "    pm.collectionVariables.set('token', jsonData.data.login.accessToken);",
+                  "    pm.collectionVariables.set('user_id', jsonData.data.login.user.id);",
+                  "    console.log('Token sauvegardé:', jsonData.data.login.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  login(input: {\n    email: \"admin@traffic.com\",\n    password: \"password123\"\n  }) {\n    accessToken\n    user {\n      id\n      email\n      role\n      firstName\n      lastName\n    }\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3001/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["graphql"]
+            },
+            "description": "Se connecter et récupérer un token JWT. Le token est automatiquement sauvegardé dans la variable {{token}}."
+          },
+          "response": []
+        },
+        {
+          "name": "Mon Profil (Me)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  me {\n    id\n    email\n    role\n    firstName\n    lastName\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3001/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["graphql"]
+            },
+            "description": "Récupérer le profil de l'utilisateur actuellement authentifié (nécessite un token JWT valide)"
+          },
+          "response": []
+        },
+        {
+          "name": "Liste des Utilisateurs (Users)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  users {\n    id\n    email\n    role\n    firstName\n    lastName\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3001/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["graphql"]
+            },
+            "description": "Récupérer la liste de tous les utilisateurs (réservé aux administrateurs)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Vehicles",
+      "description": "Gestion des véhicules et positions GPS - Port 3002",
+      "item": [
+        {
+          "name": "Ajouter un Véhicule (Add Vehicle)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.addVehicle) {",
+                  "    pm.collectionVariables.set('vehicle_id', jsonData.data.addVehicle.id);",
+                  "    console.log('Vehicle ID sauvegardé:', jsonData.data.addVehicle.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  addVehicle(input: {\n    licensePlate: \"AB-123-CD\",\n    model: \"Clio\",\n    brand: \"Renault\",\n    type: CAR,\n    status: ACTIVE,\n    ownerId: \"{{user_id}}\"\n  }) {\n    id\n    licensePlate\n    model\n    brand\n    type\n    status\n    ownerId\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3002/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["graphql"]
+            },
+            "description": "Enregistrer un nouveau véhicule dans le système. Types: CAR, TRUCK, MOTORCYCLE, BUS, EMERGENCY. Statuts: ACTIVE, INACTIVE, MAINTENANCE."
+          },
+          "response": []
+        },
+        {
+          "name": "Liste des Véhicules (Vehicles)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  vehicles {\n    id\n    licensePlate\n    model\n    brand\n    type\n    status\n    ownerId\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3002/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["graphql"]
+            },
+            "description": "Récupérer la liste de tous les véhicules enregistrés"
+          },
+          "response": []
+        },
+        {
+          "name": "Détail d'un Véhicule (Get Vehicle)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  vehicle(id: \"{{vehicle_id}}\") {\n    id\n    licensePlate\n    model\n    brand\n    type\n    status\n    ownerId\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3002/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["graphql"]
+            },
+            "description": "Récupérer les détails d'un véhicule spécifique par son ID (utilise la variable {{vehicle_id}})"
+          },
+          "response": []
+        },
+        {
+          "name": "Enregistrer Position GPS (Record GPS Position)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  recordGpsPosition(input: {\n    vehicleId: \"{{vehicle_id}}\",\n    latitude: 48.8566,\n    longitude: 2.3522,\n    speed: 50\n  }) {\n    id\n    vehicleId\n    latitude\n    longitude\n    speed\n    timestamp\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3002/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["graphql"]
+            },
+            "description": "Enregistrer une nouvelle position GPS pour un véhicule (latitude/longitude Paris par défaut)"
+          },
+          "response": []
+        },
+        {
+          "name": "Historique GPS d'un Véhicule (Vehicle History)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  vehicleHistory(vehicleId: \"{{vehicle_id}}\") {\n    id\n    vehicleId\n    latitude\n    longitude\n    speed\n    timestamp\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3002/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3002",
+              "path": ["graphql"]
+            },
+            "description": "Récupérer l'historique complet des positions GPS d'un véhicule"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Traffic",
+      "description": "Gestion des zones de trafic et densité - Port 3003",
+      "item": [
+        {
+          "name": "Créer une Zone de Trafic (Create Zone)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.createTrafficZone) {",
+                  "    pm.collectionVariables.set('zone_id', jsonData.data.createTrafficZone.id);",
+                  "    console.log('Zone ID sauvegardé:', jsonData.data.createTrafficZone.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  createTrafficZone(input: {\n    name: \"Zone Centre-Ville\",\n    description: \"Zone de trafic du centre historique\",\n    latitude: 48.8566,\n    longitude: 2.3522,\n    radius: 500.0\n  }) {\n    id\n    name\n    description\n    latitude\n    longitude\n    radius\n    vehicleCount\n    density\n    congestionLevel\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3003/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3003",
+              "path": ["graphql"]
+            },
+            "description": "Créer une nouvelle zone de surveillance du trafic (rayon en mètres)"
+          },
+          "response": []
+        },
+        {
+          "name": "Liste des Zones (Traffic Zones)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  trafficZones {\n    id\n    name\n    description\n    latitude\n    longitude\n    radius\n    vehicleCount\n    density\n    congestionLevel\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3003/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3003",
+              "path": ["graphql"]
+            },
+            "description": "Récupérer la liste de toutes les zones de trafic"
+          },
+          "response": []
+        },
+        {
+          "name": "Détail d'une Zone (Get Zone)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  trafficZone(id: \"{{zone_id}}\") {\n    id\n    name\n    description\n    latitude\n    longitude\n    radius\n    vehicleCount\n    density\n    congestionLevel\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3003/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3003",
+              "path": ["graphql"]
+            },
+            "description": "Récupérer les détails d'une zone de trafic spécifique par son ID (utilise {{zone_id}})"
+          },
+          "response": []
+        },
+        {
+          "name": "Mettre à Jour la Densité (Update Density)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  updateTrafficDensity(input: {\n    zoneId: \"{{zone_id}}\",\n    vehicleCount: 150,\n    density: 0.75\n  }) {\n    id\n    name\n    vehicleCount\n    density\n    congestionLevel\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3003/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3003",
+              "path": ["graphql"]
+            },
+            "description": "Mettre à jour le nombre de véhicules et la densité d'une zone (déclenche le recalcul du niveau de congestion)"
+          },
+          "response": []
+        },
+        {
+          "name": "Zones Encombrées (Congested Zones)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  congestedZones {\n    id\n    name\n    description\n    latitude\n    longitude\n    radius\n    vehicleCount\n    density\n    congestionLevel\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3003/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3003",
+              "path": ["graphql"]
+            },
+            "description": "Récupérer uniquement les zones avec un niveau de congestion HIGH"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Incidents",
+      "description": "Gestion des incidents de circulation - Port 3004",
+      "item": [
+        {
+          "name": "Déclarer un Incident (Declare Incident)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.declareIncident) {",
+                  "    pm.collectionVariables.set('incident_id', jsonData.data.declareIncident.id);",
+                  "    console.log('Incident ID sauvegardé:', jsonData.data.declareIncident.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  declareIncident(input: {\n    type: ACCIDENT,\n    description: \"Collision entre deux véhicules au carrefour\",\n    latitude: 48.8566,\n    longitude: 2.3522,\n    vehicleId: \"{{vehicle_id}}\",\n    reportedBy: \"{{user_id}}\"\n  }) {\n    id\n    type\n    status\n    description\n    latitude\n    longitude\n    vehicleId\n    reportedBy\n    resolvedAt\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3004/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3004",
+              "path": ["graphql"]
+            },
+            "description": "Déclarer un nouveau incident de circulation. Types: ACCIDENT, CONSTRUCTION, ROAD_CLOSED, TRAFFIC_JAM"
+          },
+          "response": []
+        },
+        {
+          "name": "Liste de Tous les Incidents (All Incidents)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  incidents {\n    id\n    type\n    status\n    description\n    latitude\n    longitude\n    vehicleId\n    reportedBy\n    resolvedAt\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3004/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3004",
+              "path": ["graphql"]
+            },
+            "description": "Récupérer la liste de tous les incidents sans filtre"
+          },
+          "response": []
+        },
+        {
+          "name": "Incidents par Statut (Incidents by Status)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  incidents(status: REPORTED) {\n    id\n    type\n    status\n    description\n    latitude\n    longitude\n    vehicleId\n    reportedBy\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3004/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3004",
+              "path": ["graphql"]
+            },
+            "description": "Récupérer les incidents filtrés par statut. Statuts disponibles: REPORTED, IN_PROGRESS, RESOLVED"
+          },
+          "response": []
+        },
+        {
+          "name": "Détail d'un Incident (Get Incident)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  incident(id: \"{{incident_id}}\") {\n    id\n    type\n    status\n    description\n    latitude\n    longitude\n    vehicleId\n    reportedBy\n    resolvedAt\n    createdAt\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3004/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3004",
+              "path": ["graphql"]
+            },
+            "description": "Récupérer les détails d'un incident spécifique par son ID (utilise {{incident_id}})"
+          },
+          "response": []
+        },
+        {
+          "name": "Mettre à Jour le Statut (Update Status)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  updateIncidentStatus(input: {\n    id: \"{{incident_id}}\",\n    status: IN_PROGRESS\n  }) {\n    id\n    type\n    status\n    description\n    resolvedAt\n    updatedAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3004/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3004",
+              "path": ["graphql"]
+            },
+            "description": "Changer le statut d'un incident: REPORTED → IN_PROGRESS → RESOLVED"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "description": "Gestion des notifications utilisateurs - Port 3005",
+      "item": [
+        {
+          "name": "Envoyer une Notification (Send Notification)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.sendNotification) {",
+                  "    pm.collectionVariables.set('notification_id', jsonData.data.sendNotification.id);",
+                  "    console.log('Notification ID sauvegardé:', jsonData.data.sendNotification.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  sendNotification(input: {\n    userId: \"{{user_id}}\",\n    message: \"Un nouvel incident a été signalé dans votre zone\",\n    type: INCIDENT,\n    referenceId: \"{{incident_id}}\"\n  }) {\n    id\n    userId\n    message\n    type\n    isRead\n    referenceId\n    createdAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3005/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3005",
+              "path": ["graphql"]
+            },
+            "description": "Envoyer une notification à un utilisateur. Types: INCIDENT, TRAFFIC, SYSTEM, ALERT"
+          },
+          "response": []
+        },
+        {
+          "name": "Toutes les Notifications (All Notifications)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  notifications {\n    id\n    userId\n    message\n    type\n    isRead\n    referenceId\n    createdAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3005/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3005",
+              "path": ["graphql"]
+            },
+            "description": "Récupérer toutes les notifications du système"
+          },
+          "response": []
+        },
+        {
+          "name": "Mes Notifications (My Notifications)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "query {\n  myNotifications(userId: \"{{user_id}}\") {\n    id\n    userId\n    message\n    type\n    isRead\n    referenceId\n    createdAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3005/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3005",
+              "path": ["graphql"]
+            },
+            "description": "Récupérer les notifications d'un utilisateur spécifique (utilise {{user_id}})"
+          },
+          "response": []
+        },
+        {
+          "name": "Marquer comme Lu (Mark As Read)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  markNotificationAsRead(id: \"{{notification_id}}\") {\n    id\n    userId\n    message\n    type\n    isRead\n    createdAt\n  }\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3005/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3005",
+              "path": ["graphql"]
+            },
+            "description": "Marquer une notification spécifique comme lue (utilise {{notification_id}})"
+          },
+          "response": []
+        },
+        {
+          "name": "Tout Marquer comme Lu (Mark All As Read)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "graphql",
+              "graphql": {
+                "query": "mutation {\n  markAllNotificationsAsRead(userId: \"{{user_id}}\")\n}",
+                "variables": ""
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3005/graphql",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3005",
+              "path": ["graphql"]
+            },
+            "description": "Marquer toutes les notifications d'un utilisateur comme lues (retourne le nombre de notifications mises à jour)"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
