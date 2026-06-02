@@ -68,16 +68,20 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation {\n  register(input: {\n    email: \"admin@traffic.com\",\n    password: \"password123\",\n    firstName: \"Admin\",\n    lastName: \"User\",\n    role: ADMIN\n  }) {\n    accessToken\n    user {\n      id\n      email\n      role\n      firstName\n      lastName\n      createdAt\n    }\n  }\n}",
+                "query": "mutation {\n  register(input: {\n    email: \"admin@traffic.com\",\n    password: \"Password1\",\n    firstName: \"Admin\",\n    lastName: \"User\"\n  }) {\n    accessToken\n    user {\n      id\n      email\n      role\n      firstName\n      lastName\n      createdAt\n    }\n  }\n}",
                 "variables": ""
               }
             },
             "url": {
               "raw": "http://localhost:3001/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3001",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Créer un nouveau compte utilisateur avec le rôle ADMIN ou OPERATOR"
           },
@@ -113,16 +117,20 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation {\n  login(input: {\n    email: \"admin@traffic.com\",\n    password: \"password123\"\n  }) {\n    accessToken\n    user {\n      id\n      email\n      role\n      firstName\n      lastName\n    }\n  }\n}",
+                "query": "mutation {\n  login(input: {\n    email: \"admin@traffic.com\",\n    password: \"Password1\"\n  }) {\n    accessToken\n    user {\n      id\n      email\n      role\n      firstName\n      lastName\n    }\n  }\n}",
                 "variables": ""
               }
             },
             "url": {
               "raw": "http://localhost:3001/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3001",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Se connecter et récupérer un token JWT. Le token est automatiquement sauvegardé dans la variable {{token}}."
           },
@@ -154,9 +162,13 @@
             "url": {
               "raw": "http://localhost:3001/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3001",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Récupérer le profil de l'utilisateur actuellement authentifié (nécessite un token JWT valide)"
           },
@@ -188,9 +200,13 @@
             "url": {
               "raw": "http://localhost:3001/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3001",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Récupérer la liste de tous les utilisateurs (réservé aux administrateurs)"
           },
@@ -236,16 +252,20 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation {\n  addVehicle(input: {\n    licensePlate: \"AB-123-CD\",\n    model: \"Clio\",\n    brand: \"Renault\",\n    type: CAR,\n    status: ACTIVE,\n    ownerId: \"{{user_id}}\"\n  }) {\n    id\n    licensePlate\n    model\n    brand\n    type\n    status\n    ownerId\n    createdAt\n    updatedAt\n  }\n}",
+                "query": "mutation {\n  addVehicle(input: {\n    licensePlate: \"AB-123-CD\",\n    model: \"Clio\",\n    brand: \"Renault\",\n    type: CAR,\n    ownerId: \"{{user_id}}\"\n  }) {\n    id\n    licensePlate\n    model\n    brand\n    type\n    status\n    ownerId\n    createdAt\n    updatedAt\n  }\n}",
                 "variables": ""
               }
             },
             "url": {
               "raw": "http://localhost:3002/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3002",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Enregistrer un nouveau véhicule dans le système. Types: CAR, TRUCK, MOTORCYCLE, BUS, EMERGENCY. Statuts: ACTIVE, INACTIVE, MAINTENANCE."
           },
@@ -277,9 +297,13 @@
             "url": {
               "raw": "http://localhost:3002/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3002",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Récupérer la liste de tous les véhicules enregistrés"
           },
@@ -311,9 +335,13 @@
             "url": {
               "raw": "http://localhost:3002/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3002",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Récupérer les détails d'un véhicule spécifique par son ID (utilise la variable {{vehicle_id}})"
           },
@@ -338,16 +366,20 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation {\n  recordGpsPosition(input: {\n    vehicleId: \"{{vehicle_id}}\",\n    latitude: 48.8566,\n    longitude: 2.3522,\n    speed: 50\n  }) {\n    id\n    vehicleId\n    latitude\n    longitude\n    speed\n    timestamp\n  }\n}",
+                "query": "mutation {\n  recordGpsPosition(input: {\n    vehicleId: \"{{vehicle_id}}\",\n    latitude: 36.7988,\n    longitude: 10.1806,\n    speed: 50\n  }) {\n    id\n    vehicleId\n    latitude\n    longitude\n    speed\n    timestamp\n  }\n}",
                 "variables": ""
               }
             },
             "url": {
               "raw": "http://localhost:3002/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3002",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Enregistrer une nouvelle position GPS pour un véhicule (latitude/longitude Paris par défaut)"
           },
@@ -379,9 +411,13 @@
             "url": {
               "raw": "http://localhost:3002/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3002",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Récupérer l'historique complet des positions GPS d'un véhicule"
           },
@@ -427,16 +463,20 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation {\n  createTrafficZone(input: {\n    name: \"Zone Centre-Ville\",\n    description: \"Zone de trafic du centre historique\",\n    latitude: 48.8566,\n    longitude: 2.3522,\n    radius: 500.0\n  }) {\n    id\n    name\n    description\n    latitude\n    longitude\n    radius\n    vehicleCount\n    density\n    congestionLevel\n    createdAt\n    updatedAt\n  }\n}",
+                "query": "mutation {\n  createTrafficZone(input: {\n    name: \"Zone Centre-Ville\",\n    description: \"Zone de trafic du centre historique\",\n    latitude: 36.7988,\n    longitude: 10.1806,\n    radius: 500.0\n  }) {\n    id\n    name\n    description\n    latitude\n    longitude\n    radius\n    vehicleCount\n    density\n    congestionLevel\n    createdAt\n    updatedAt\n  }\n}",
                 "variables": ""
               }
             },
             "url": {
               "raw": "http://localhost:3003/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3003",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Créer une nouvelle zone de surveillance du trafic (rayon en mètres)"
           },
@@ -468,9 +508,13 @@
             "url": {
               "raw": "http://localhost:3003/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3003",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Récupérer la liste de toutes les zones de trafic"
           },
@@ -502,9 +546,13 @@
             "url": {
               "raw": "http://localhost:3003/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3003",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Récupérer les détails d'une zone de trafic spécifique par son ID (utilise {{zone_id}})"
           },
@@ -529,16 +577,20 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation {\n  updateTrafficDensity(input: {\n    zoneId: \"{{zone_id}}\",\n    vehicleCount: 150,\n    density: 0.75\n  }) {\n    id\n    name\n    vehicleCount\n    density\n    congestionLevel\n    updatedAt\n  }\n}",
+                "query": "mutation {\n  updateTrafficDensity(input: {\n    zoneId: \"{{zone_id}}\",\n    vehicleCount: 150\n  }) {\n    id\n    name\n    vehicleCount\n    density\n    congestionLevel\n    updatedAt\n  }\n}",
                 "variables": ""
               }
             },
             "url": {
               "raw": "http://localhost:3003/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3003",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Mettre à jour le nombre de véhicules et la densité d'une zone (déclenche le recalcul du niveau de congestion)"
           },
@@ -570,9 +622,13 @@
             "url": {
               "raw": "http://localhost:3003/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3003",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Récupérer uniquement les zones avec un niveau de congestion HIGH"
           },
@@ -618,16 +674,20 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation {\n  declareIncident(input: {\n    type: ACCIDENT,\n    description: \"Collision entre deux véhicules au carrefour\",\n    latitude: 48.8566,\n    longitude: 2.3522,\n    vehicleId: \"{{vehicle_id}}\",\n    reportedBy: \"{{user_id}}\"\n  }) {\n    id\n    type\n    status\n    description\n    latitude\n    longitude\n    vehicleId\n    reportedBy\n    resolvedAt\n    createdAt\n    updatedAt\n  }\n}",
+                "query": "mutation {\n  declareIncident(input: {\n    type: ACCIDENT,\n    description: \"Collision entre deux véhicules au carrefour\",\n    latitude: 36.7988,\n    longitude: 10.1806,\n    vehicleId: \"{{vehicle_id}}\",\n    reportedBy: \"{{user_id}}\"\n  }) {\n    id\n    type\n    status\n    description\n    latitude\n    longitude\n    vehicleId\n    reportedBy\n    resolvedAt\n    createdAt\n    updatedAt\n  }\n}",
                 "variables": ""
               }
             },
             "url": {
               "raw": "http://localhost:3004/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3004",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Déclarer un nouveau incident de circulation. Types: ACCIDENT, CONSTRUCTION, ROAD_CLOSED, TRAFFIC_JAM"
           },
@@ -659,9 +719,13 @@
             "url": {
               "raw": "http://localhost:3004/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3004",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Récupérer la liste de tous les incidents sans filtre"
           },
@@ -693,9 +757,13 @@
             "url": {
               "raw": "http://localhost:3004/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3004",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Récupérer les incidents filtrés par statut. Statuts disponibles: REPORTED, IN_PROGRESS, RESOLVED"
           },
@@ -720,16 +788,20 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "query {\n  incident(id: \"{{incident_id}}\") {\n    id\n    type\n    status\n    description\n    latitude\n    longitude\n    vehicleId\n    reportedBy\n    resolvedAt\n    createdAt\n    updatedAt\n  }\n}",
+                "query": "query {\n  incident(incidentId: \"{{incident_id}}\") {\n    id\n    type\n    status\n    description\n    latitude\n    longitude\n    vehicleId\n    reportedBy\n    resolvedAt\n    createdAt\n    updatedAt\n  }\n}",
                 "variables": ""
               }
             },
             "url": {
               "raw": "http://localhost:3004/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3004",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Récupérer les détails d'un incident spécifique par son ID (utilise {{incident_id}})"
           },
@@ -754,16 +826,20 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation {\n  updateIncidentStatus(input: {\n    id: \"{{incident_id}}\",\n    status: IN_PROGRESS\n  }) {\n    id\n    type\n    status\n    description\n    resolvedAt\n    updatedAt\n  }\n}",
+                "query": "mutation {\n  updateIncidentStatus(input: {\n    incidentId: \"{{incident_id}}\",\n    status: IN_PROGRESS\n  }) {\n    id\n    type\n    status\n    description\n    resolvedAt\n    updatedAt\n  }\n}",
                 "variables": ""
               }
             },
             "url": {
               "raw": "http://localhost:3004/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3004",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Changer le statut d'un incident: REPORTED → IN_PROGRESS → RESOLVED"
           },
@@ -816,9 +892,13 @@
             "url": {
               "raw": "http://localhost:3005/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3005",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Envoyer une notification à un utilisateur. Types: INCIDENT, TRAFFIC, SYSTEM, ALERT"
           },
@@ -850,9 +930,13 @@
             "url": {
               "raw": "http://localhost:3005/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3005",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Récupérer toutes les notifications du système"
           },
@@ -877,16 +961,20 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "query {\n  myNotifications(userId: \"{{user_id}}\") {\n    id\n    userId\n    message\n    type\n    isRead\n    referenceId\n    createdAt\n  }\n}",
+                "query": "query {\n  myNotifications {\n    id\n    userId\n    message\n    type\n    isRead\n    referenceId\n    createdAt\n  }\n}",
                 "variables": ""
               }
             },
             "url": {
               "raw": "http://localhost:3005/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3005",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Récupérer les notifications d'un utilisateur spécifique (utilise {{user_id}})"
           },
@@ -918,9 +1006,13 @@
             "url": {
               "raw": "http://localhost:3005/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3005",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Marquer une notification spécifique comme lue (utilise {{notification_id}})"
           },
@@ -945,16 +1037,20 @@
             "body": {
               "mode": "graphql",
               "graphql": {
-                "query": "mutation {\n  markAllNotificationsAsRead(userId: \"{{user_id}}\")\n}",
+                "query": "mutation {\n  markAllNotificationsAsRead\n}",
                 "variables": ""
               }
             },
             "url": {
               "raw": "http://localhost:3005/graphql",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "3005",
-              "path": ["graphql"]
+              "path": [
+                "graphql"
+              ]
             },
             "description": "Marquer toutes les notifications d'un utilisateur comme lues (retourne le nombre de notifications mises à jour)"
           },
