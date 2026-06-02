@@ -31,9 +31,14 @@ import { Incident } from './incidents/incident.entity';
       playground: process.env.NODE_ENV !== 'production',
       introspection: process.env.NODE_ENV !== 'production',
       subscriptions: {
-        'graphql-ws': true,
+        'graphql-ws': {
+          onConnect: (ctx) => ({ connectionParams: ctx.connectionParams }),
+        },
       },
-      context: ({ req }) => ({ req }),
+      context: ({ req, extra }) => ({
+        req,
+        connectionParams: extra?.connectionParams,
+      }),
     }),
     IncidentsModule,
   ],

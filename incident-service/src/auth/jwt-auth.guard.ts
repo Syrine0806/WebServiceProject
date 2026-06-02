@@ -12,16 +12,26 @@ export class JwtAuthGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const ctx = GqlExecutionContext.create(context);
-    const req = ctx.getContext().req;
-    const auth = req.headers.authorization;
-    if (!auth || !auth.startsWith('Bearer ')) {
+    const gqlCtx = ctx.getContext();
+
+    // HTTP request header OR WebSocket connectionParams
+    const authHeader: string | undefined =
+      gqlCtx.req?.headers?.authorization ??
+      gqlCtx.connectionParams?.Authorization ??
+      gqlCtx.connectionParams?.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       throw new UnauthorizedException('Missing or invalid token');
     }
-    const token = auth.split(' ')[1];
+
+    const token = authHeader.split(' ')[1];
     try {
-      req.user = this.jwtService.verify(token, {
+      const payload = this.jwtService.verify(token, {
         secret: this.configService.getOrThrow<string>('JWT_SECRET'),
       });
+      // Attach user to whichever context object is available
+      if (gqlCtx.req) gqlCtx.req.user = payload;
+      else gqlCtx.user = payload;
       return true;
     } catch {
       throw new UnauthorizedException('Invalid or expired token');
