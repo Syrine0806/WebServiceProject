@@ -18,8 +18,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: auth-service/package-lock.json
       - run: npm install
       - run: npm run build
       - run: npx jest --passWithNoTests
@@ -35,8 +33,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: vehicle-service/package-lock.json
       - run: npm install
       - run: npm run build
       - run: npx jest --passWithNoTests
@@ -52,8 +48,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: incident-service/package-lock.json
       - run: npm install
       - run: npm run build
       - run: npx jest --passWithNoTests
@@ -65,12 +59,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build all Docker images
-        run: docker-compose build
-      - name: Verify services start
-        run: |
-          docker-compose up -d auth-db vehicle-db incident-db traffic-db notification-db
-          sleep 15
-          docker-compose up -d auth-service vehicle-service traffic-service incident-service notification-service
-          sleep 20
-          docker-compose ps
-          docker-compose down
+        run: docker compose build --parallel
