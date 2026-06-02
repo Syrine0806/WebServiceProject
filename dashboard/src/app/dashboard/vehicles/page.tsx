@@ -46,14 +46,18 @@ const TYPE_EMOJI: Record<string, string> = {
   CAR: '🚗', TRUCK: '🚛', BUS: '🚌', MOTORCYCLE: '🏍️', EMERGENCY: '🚑',
 };
 
-// Preset locations around Tunis for easy testing
+// Verified GPS coordinates — Tunis metropolitan area
 const PRESETS = [
-  { label: 'Centre-Ville',  lat: 36.8065,  lng: 10.1815 },
-  { label: 'La Marsa',      lat: 36.8778,  lng: 10.3244 },
-  { label: 'Ariana',        lat: 36.8625,  lng: 10.1956 },
-  { label: 'Ben Arous',     lat: 36.7533,  lng: 10.2281 },
-  { label: 'Carthage',      lat: 36.8528,  lng: 10.3264 },
-  { label: 'El Menzah',     lat: 36.8487,  lng: 10.1933 },
+  { label: 'Av. Bourguiba', lat: 36.7988,  lng: 10.1806 }, // city center
+  { label: 'La Marsa',      lat: 36.8746,  lng: 10.3243 },
+  { label: 'Ariana',        lat: 36.8664,  lng: 10.1952 },
+  { label: 'Ben Arous',     lat: 36.7561,  lng: 10.2192 },
+  { label: 'Carthage',      lat: 36.8519,  lng: 10.3238 },
+  { label: 'El Menzah',     lat: 36.8488,  lng: 10.2007 },
+  { label: 'Bardo',         lat: 36.8094,  lng: 10.1404 },
+  { label: 'Manouba',       lat: 36.8085,  lng: 10.0973 },
+  { label: 'Lac Tunis',     lat: 36.8322,  lng: 10.2308 },
+  { label: 'Ennasr',        lat: 36.8608,  lng: 10.1789 },
 ];
 
 export default function VehiclesPage() {
@@ -318,7 +322,7 @@ export default function VehiclesPage() {
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button
-                        onClick={() => { setGpsModal(v); setGpsForm({ latitude: '36.8065', longitude: '10.1815', speed: '0' }); }}
+                        onClick={() => { setGpsModal(v); setGpsForm({ latitude: '36.7988', longitude: '10.1806', speed: '0' }); }}
                         className="text-xs px-2.5 py-1.5 rounded-lg bg-green-900/40 hover:bg-green-800/60 text-green-400 font-medium transition-colors"
                         title="Enregistrer position GPS"
                       >

@@ -109,13 +109,15 @@ export default function MapPage() {
             Mis à jour à {lastRefresh.toLocaleTimeString('fr-FR')} — actualisation auto 5s
           </p>
         </div>
-        <button
-          onClick={() => loadData()}
-          disabled={refreshing}
-          className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
-        >
-          {refreshing ? '⏳ Actualisation...' : '↻ Actualiser'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => loadData()}
+            disabled={refreshing}
+            className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+          >
+            {refreshing ? '⏳...' : '↻ Actualiser'}
+          </button>
+        </div>
       </div>
 
       {/* ── Stats ────────────────────────────────────────────────────── */}
