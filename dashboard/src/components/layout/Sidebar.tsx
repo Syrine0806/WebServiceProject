@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 
 const nav = [
   { href: '/dashboard', label: 'Vue d\'ensemble', icon: '🏠' },
+  { href: '/dashboard/map', label: 'Carte Interactive', icon: '🗺️' },
   { href: '/dashboard/vehicles', label: 'Véhicules', icon: '🚗' },
   { href: '/dashboard/traffic', label: 'Trafic', icon: '🚦' },
   { href: '/dashboard/incidents', label: 'Incidents', icon: '⚠️' },
