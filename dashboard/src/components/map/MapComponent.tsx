@@ -3,14 +3,6 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Fix Leaflet default marker icons broken by webpack
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
-
 interface Vehicle {
   id: string;
   licensePlate: string;
@@ -18,7 +10,7 @@ interface Vehicle {
   brand: string;
   type: string;
   status: string;
-  lastPosition?: { latitude: number; longitude: number; speed: number; timestamp: string };
+  lastPosition?: { latitude: number; longitude: number; speed: number; timestamp: string } | null;
 }
 
 interface TrafficZone {
@@ -47,143 +39,180 @@ interface Props {
   incidents: Incident[];
 }
 
-const CONGESTION_COLORS: Record<string, string> = {
-  LOW: '#22c55e',
+const ZONE_COLORS: Record<string, string> = {
+  LOW:    '#22c55e',
   MEDIUM: '#f59e0b',
-  HIGH: '#ef4444',
-};
-
-const INCIDENT_ICONS: Record<string, string> = {
-  ACCIDENT: '💥',
-  CONSTRUCTION: '🏗️',
-  ROAD_CLOSED: '🚧',
-  TRAFFIC_JAM: '🚗',
+  HIGH:   '#ef4444',
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  REPORTED: '#f59e0b',
+  REPORTED:    '#f59e0b',
   IN_PROGRESS: '#6366f1',
-  RESOLVED: '#22c55e',
+  RESOLVED:    '#22c55e',
 };
 
-export default function MapComponent({ vehicles, zones, incidents }: Props) {
-  const mapRef = useRef<L.Map | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+const INCIDENT_EMOJI: Record<string, string> = {
+  ACCIDENT:    '💥',
+  CONSTRUCTION:'🏗',
+  ROAD_CLOSED: '🚧',
+  TRAFFIC_JAM: '🚕',
+};
 
+const VEHICLE_EMOJI: Record<string, string> = {
+  CAR:        '🚗',
+  TRUCK:      '🚛',
+  BUS:        '🚌',
+  MOTORCYCLE: '🏍',
+  EMERGENCY:  '🚑',
+};
+
+/** Build a pin-shaped SVG marker */
+function pinIcon(emoji: string, bg: string, size = 40): L.DivIcon {
+  return L.divIcon({
+    html: `
+      <svg width="${size}" height="${size + 8}" viewBox="0 0 ${size} ${size + 8}" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 2}" fill="${bg}" stroke="white" stroke-width="3"/>
+        <polygon points="${size / 2 - 6},${size - 2} ${size / 2 + 6},${size - 2} ${size / 2},${size + 6}"
+                 fill="${bg}" stroke="white" stroke-width="1.5"/>
+        <text x="${size / 2}" y="${size / 2 + 6}" text-anchor="middle" font-size="${size * 0.42}">${emoji}</text>
+      </svg>`,
+    className: '',
+    iconSize:    [size, size + 8],
+    iconAnchor:  [size / 2, size + 8],
+    popupAnchor: [0, -(size + 8)],
+  });
+}
+
+export default function MapComponent({ vehicles, zones, incidents }: Props) {
+  const containerRef  = useRef<HTMLDivElement>(null);
+  const mapRef        = useRef<L.Map | null>(null);
+  const zonesGroupRef    = useRef<L.LayerGroup | null>(null);
+  const incGroupRef      = useRef<L.LayerGroup | null>(null);
+  const vehGroupRef      = useRef<L.LayerGroup | null>(null);
+
+  // ── 1. Initialise the map once ──────────────────────────────────────────
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    // Initialize map centered on Tunis
     const map = L.map(containerRef.current, {
       center: [36.8065, 10.1815],
-      zoom: 12,
+      zoom: 13,
       zoomControl: true,
     });
     mapRef.current = map;
 
-    // OpenStreetMap tile layer (free, no API key)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19,
     }).addTo(map);
 
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
+    // Separate layer groups — order matters: zones → incidents → vehicles (top)
+    zonesGroupRef.current   = L.layerGroup().addTo(map);
+    incGroupRef.current     = L.layerGroup().addTo(map);
+    vehGroupRef.current     = L.layerGroup().addTo(map);
+
+    return () => { map.remove(); mapRef.current = null; };
   }, []);
 
-  // Update layers when data changes
+  // ── 2. Update zones ─────────────────────────────────────────────────────
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
+    const grp = zonesGroupRef.current;
+    if (!grp) return;
+    grp.clearLayers();
 
-    // Remove all existing layers except tile layer
-    map.eachLayer((layer) => {
-      if (!(layer instanceof L.TileLayer)) map.removeLayer(layer);
-    });
-
-    // ── Traffic Zones (colored circles) ─────────────────────────────
     zones.forEach((zone) => {
-      const color = CONGESTION_COLORS[zone.congestionLevel] ?? '#6366f1';
-      L.circle([Number(zone.latitude), Number(zone.longitude)], {
-        radius: Number(zone.radius),
-        color,
-        fillColor: color,
-        fillOpacity: 0.15,
-        weight: 2,
-      })
-        .addTo(map)
-        .bindPopup(`
-          <div style="font-family:sans-serif;min-width:160px">
-            <strong>🚦 ${zone.name}</strong><br/>
-            <span style="color:${color};font-weight:600">${zone.congestionLevel}</span><br/>
-            Véhicules : ${zone.vehicleCount}<br/>
-            Densité : ${Number(zone.density).toFixed(6)}<br/>
-            Rayon : ${zone.radius}m
-          </div>
-        `);
-    });
+      const color = ZONE_COLORS[zone.congestionLevel] ?? '#6366f1';
+      const lat   = Number(zone.latitude);
+      const lng   = Number(zone.longitude);
+      const r     = Number(zone.radius);
 
-    // ── Incidents ───────────────────────────────────────────────────
+      // Filled circle for the zone
+      L.circle([lat, lng], {
+        radius:      r,
+        color,
+        fillColor:   color,
+        fillOpacity: 0.18,
+        weight:      2.5,
+      }).addTo(grp).bindPopup(
+        `<b>🚦 ${zone.name}</b><br>
+         Congestion : <b style="color:${color}">${zone.congestionLevel}</b><br>
+         Véhicules : ${zone.vehicleCount}<br>
+         Rayon : ${r} m`
+      );
+
+      // Central dot so the zone is visible at any zoom
+      L.circleMarker([lat, lng], {
+        radius:      7,
+        color,
+        fillColor:   color,
+        fillOpacity: 1,
+        weight:      2,
+      }).addTo(grp);
+    });
+  }, [zones]);
+
+  // ── 3. Update incidents ─────────────────────────────────────────────────
+  useEffect(() => {
+    const grp = incGroupRef.current;
+    if (!grp) return;
+    grp.clearLayers();
+
     incidents
       .filter((i) => i.status !== 'RESOLVED')
       .forEach((inc) => {
-        const icon = INCIDENT_ICONS[inc.type] ?? '⚠️';
+        const lat   = Number(inc.latitude);
+        const lng   = Number(inc.longitude);
         const color = STATUS_COLORS[inc.status] ?? '#94a3b8';
-        const marker = L.divIcon({
-          html: `<div style="
-            background:${color};
-            width:34px;height:34px;border-radius:50%;
-            display:flex;align-items:center;justify-content:center;
-            font-size:16px;border:2px solid white;
-            box-shadow:0 2px 6px rgba(0,0,0,0.4)">
-            ${icon}
-          </div>`,
-          className: '',
-          iconSize: [34, 34],
-          iconAnchor: [17, 17],
-        });
-        L.marker([Number(inc.latitude), Number(inc.longitude)], { icon: marker })
-          .addTo(map)
-          .bindPopup(`
-            <div style="font-family:sans-serif;min-width:160px">
-              <strong>${icon} ${inc.type.replace('_', ' ')}</strong><br/>
-              <span style="color:${color};font-weight:600">${inc.status.replace('_', ' ')}</span><br/>
-              ${inc.description}
-            </div>
-          `);
-      });
+        const emoji = INCIDENT_EMOJI[inc.type] ?? '⚠️';
 
-    // ── Vehicles ─────────────────────────────────────────────────────
+        if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+
+        // Big pulsing circle so the incident is always visible
+        L.circleMarker([lat, lng], {
+          radius:      18,
+          color:       color,
+          fillColor:   color,
+          fillOpacity: 0.25,
+          weight:      3,
+        }).addTo(grp);
+
+        // Pin icon on top
+        L.marker([lat, lng], { icon: pinIcon(emoji, color, 38), zIndexOffset: 500 })
+          .addTo(grp)
+          .bindPopup(
+            `<b>${emoji} ${inc.type.replaceAll('_', ' ')}</b><br>
+             Statut : <b style="color:${color}">${inc.status.replaceAll('_', ' ')}</b><br>
+             ${inc.description}`
+          );
+      });
+  }, [incidents]);
+
+  // ── 4. Update vehicles ──────────────────────────────────────────────────
+  useEffect(() => {
+    const grp = vehGroupRef.current;
+    if (!grp) return;
+    grp.clearLayers();
+
     vehicles.forEach((veh) => {
       if (!veh.lastPosition) return;
-      const { latitude, longitude, speed } = veh.lastPosition;
-      const vIcon = L.divIcon({
-        html: `<div style="
-          background:#6366f1;
-          width:30px;height:30px;border-radius:6px;
-          display:flex;align-items:center;justify-content:center;
-          font-size:14px;border:2px solid white;
-          box-shadow:0 2px 6px rgba(0,0,0,0.4)">
-          🚗
-        </div>`,
-        className: '',
-        iconSize: [30, 30],
-        iconAnchor: [15, 15],
-      });
-      L.marker([Number(latitude), Number(longitude)], { icon: vIcon })
-        .addTo(map)
-        .bindPopup(`
-          <div style="font-family:sans-serif;min-width:150px">
-            <strong>🚗 ${veh.licensePlate}</strong><br/>
-            ${veh.brand ?? ''} ${veh.model}<br/>
-            Type : ${veh.type}<br/>
-            Vitesse : ${speed ?? 0} km/h
-          </div>
-        `);
+      const lat   = Number(veh.lastPosition.latitude);
+      const lng   = Number(veh.lastPosition.longitude);
+      const speed = veh.lastPosition.speed ?? 0;
+      const emoji = VEHICLE_EMOJI[veh.type] ?? '🚗';
+
+      if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+
+      L.marker([lat, lng], { icon: pinIcon(emoji, '#4f46e5', 38), zIndexOffset: 1000 })
+        .addTo(grp)
+        .bindPopup(
+          `<b>${emoji} ${veh.licensePlate}</b><br>
+           ${veh.brand ?? ''} ${veh.model}<br>
+           Type : ${veh.type}<br>
+           Vitesse : <b>${speed} km/h</b><br>
+           Statut : ${veh.status}`
+        );
     });
-  }, [vehicles, zones, incidents]);
+  }, [vehicles]);
 
   return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />;
 }
