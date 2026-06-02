@@ -14,8 +14,8 @@ const LOGIN = gql`
 `;
 
 const REGISTER = gql`
-  mutation Register($email: String!, $password: String!, $firstName: String, $role: Role) {
-    register(input: { email: $email, password: $password, firstName: $firstName, role: $role }) {
+  mutation Register($email: String!, $password: String!, $firstName: String) {
+    register(input: { email: $email, password: $password, firstName: $firstName }) {
       accessToken
       user { id email role firstName }
     }
@@ -25,7 +25,7 @@ const REGISTER = gql`
 export default function LoginPage() {
   const router = useRouter();
   const [isRegister, setIsRegister] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '', firstName: '', role: 'OPERATOR' });
+  const [form, setForm] = useState({ email: '', password: '', firstName: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -37,7 +37,7 @@ export default function LoginPage() {
       const { data } = await authClient.mutate({
         mutation: isRegister ? REGISTER : LOGIN,
         variables: isRegister
-          ? { email: form.email, password: form.password, firstName: form.firstName, role: form.role }
+          ? { email: form.email, password: form.password, firstName: form.firstName }
           : { email: form.email, password: form.password },
       });
       const result = isRegister ? data.register : data.login;
@@ -54,14 +54,12 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0f172a]">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="text-5xl mb-3">🏙️</div>
           <h1 className="text-2xl font-bold text-white">Trafic Urbain</h1>
           <p className="text-slate-400 text-sm mt-1">Plateforme de gestion du trafic</p>
         </div>
 
-        {/* Card */}
         <div className="bg-[#1e293b] rounded-2xl p-8 border border-slate-700 shadow-2xl">
           <h2 className="text-xl font-semibold text-white mb-6">
             {isRegister ? 'Créer un compte' : 'Se connecter'}
@@ -106,17 +104,10 @@ export default function LoginPage() {
             </div>
 
             {isRegister && (
-              <div>
-                <label className="block text-sm text-slate-400 mb-1">Rôle</label>
-                <select
-                  value={form.role}
-                  onChange={e => setForm({ ...form, role: e.target.value })}
-                  className="w-full bg-[#0f172a] border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500"
-                >
-                  <option value="OPERATOR">OPERATOR</option>
-                  <option value="ADMIN">ADMIN</option>
-                </select>
-              </div>
+              <p className="text-xs text-slate-500">
+                Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre.
+                Tous les comptes sont créés avec le rôle <strong className="text-slate-400">OPERATOR</strong>.
+              </p>
             )}
 
             {error && (
