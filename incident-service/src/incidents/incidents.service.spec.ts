@@ -3,10 +3,12 @@ import { IncidentsService } from './incidents.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Incident, IncidentType, IncidentStatus } from './incident.entity';
 import { NotFoundException } from '@nestjs/common';
+import { PUB_SUB } from './pub-sub.provider';
 
 describe('IncidentsService', () => {
   let service: IncidentsService;
   let incidentRepo: any;
+  let pubSub: any;
 
   const mockIncident: Incident = {
     id: 'incident-uuid-123',
@@ -28,13 +30,16 @@ describe('IncidentsService', () => {
       find: jest.fn(),
       create: jest.fn(),
       save: jest.fn(),
-      update: jest.fn(),
+    };
+    pubSub = {
+      publish: jest.fn().mockResolvedValue(undefined),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         IncidentsService,
         { provide: getRepositoryToken(Incident), useValue: incidentRepo },
+        { provide: PUB_SUB, useValue: pubSub },
       ],
     }).compile();
 
@@ -42,7 +47,7 @@ describe('IncidentsService', () => {
   });
 
   describe('declare', () => {
-    it('should declare a new incident', async () => {
+    it('should declare a new incident with REPORTED status', async () => {
       incidentRepo.create.mockReturnValue(mockIncident);
       incidentRepo.save.mockResolvedValue(mockIncident);
 
@@ -55,6 +60,10 @@ describe('IncidentsService', () => {
 
       expect(result.type).toBe(IncidentType.ACCIDENT);
       expect(result.status).toBe(IncidentStatus.REPORTED);
+      expect(pubSub.publish).toHaveBeenCalledWith(
+        'incidentDeclared',
+        expect.objectContaining({ incidentDeclared: mockIncident }),
+      );
     });
   });
 
@@ -86,6 +95,7 @@ describe('IncidentsService', () => {
       });
 
       expect(result.status).toBe(IncidentStatus.IN_PROGRESS);
+      expect(pubSub.publish).toHaveBeenCalled();
     });
 
     it('should set resolvedAt when status is RESOLVED', async () => {

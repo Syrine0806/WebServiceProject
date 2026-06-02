@@ -45,15 +45,15 @@ describe('AuthService', () => {
   });
 
   describe('register', () => {
-    it('should register a new user successfully', async () => {
+    it('should register a new user and default to OPERATOR role', async () => {
       userRepo.findOne.mockResolvedValue(null);
       userRepo.create.mockReturnValue(mockUser);
       userRepo.save.mockResolvedValue(mockUser);
 
+      // role is no longer accepted in RegisterInput — always defaults to OPERATOR
       const result = await service.register({
         email: 'test@test.com',
-        password: 'password123',
-        role: Role.OPERATOR,
+        password: 'Password1',
       });
 
       expect(result.accessToken).toBe('mock.jwt.token');
@@ -64,26 +64,26 @@ describe('AuthService', () => {
       userRepo.findOne.mockResolvedValue(mockUser);
 
       await expect(
-        service.register({ email: 'test@test.com', password: 'password123' }),
+        service.register({ email: 'test@test.com', password: 'Password1' }),
       ).rejects.toThrow(ConflictException);
     });
   });
 
   describe('login', () => {
     it('should login successfully with correct credentials', async () => {
-      const hashed = await bcrypt.hash('password123', 10);
+      const hashed = await bcrypt.hash('Password1', 10);
       userRepo.findOne.mockResolvedValue({ ...mockUser, password: hashed });
 
       const result = await service.login({
         email: 'test@test.com',
-        password: 'password123',
+        password: 'Password1',
       });
 
       expect(result.accessToken).toBe('mock.jwt.token');
     });
 
     it('should throw UnauthorizedException for wrong password', async () => {
-      const hashed = await bcrypt.hash('correctpassword', 10);
+      const hashed = await bcrypt.hash('CorrectPass1', 10);
       userRepo.findOne.mockResolvedValue({ ...mockUser, password: hashed });
 
       await expect(
@@ -95,7 +95,7 @@ describe('AuthService', () => {
       userRepo.findOne.mockResolvedValue(null);
 
       await expect(
-        service.login({ email: 'notfound@test.com', password: 'password123' }),
+        service.login({ email: 'notfound@test.com', password: 'Password1' }),
       ).rejects.toThrow(UnauthorizedException);
     });
   });
