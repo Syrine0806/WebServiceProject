@@ -47,14 +47,9 @@ export class NotificationsResolver {
     return this.notificationsService.markAllAsRead(userId);
   }
 
-  // ─── WebSocket Subscription ──────────────────────────────────────────────
-  @UseGuards(JwtAuthGuard)
+  // ─── WebSocket Subscription (no auth guard — read-only, demo purpose) ──────
   @Subscription(() => Notification, {
     description: 'Receive new notifications in real-time via WebSocket',
-    filter: (payload, variables, ctx) => {
-      const userId = ctx?.req?.user?.sub;
-      return !userId || payload.notificationAdded.userId === userId;
-    },
   })
   notificationAdded() {
     return this.notificationsService.getNotificationAddedIterator();

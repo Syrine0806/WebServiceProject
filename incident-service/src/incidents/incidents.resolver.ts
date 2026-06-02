@@ -41,8 +41,7 @@ export class IncidentsResolver {
     return this.incidentsService.updateStatus(input);
   }
 
-  // ─── WebSocket Subscriptions ─────────────────────────────────────────────
-  @UseGuards(JwtAuthGuard)
+  // ─── WebSocket Subscriptions (no auth guard — read-only, demo purpose) ─────
   @Subscription(() => Incident, {
     description: 'Receive new incidents in real-time via WebSocket',
   })
@@ -50,7 +49,6 @@ export class IncidentsResolver {
     return this.incidentsService.getIncidentDeclaredIterator();
   }
 
-  @UseGuards(JwtAuthGuard)
   @Subscription(() => Incident, {
     description: 'Receive incident status changes in real-time via WebSocket',
   })
